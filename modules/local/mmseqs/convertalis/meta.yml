@@ -44,22 +44,18 @@ input:
         type: file
         description: "MMseqs2 alignment database to convert"
 output:
-  - blast_tsv:
+  - result:
       - meta:
           type: map
           description: "Groovy Map containing sample information"
-      - ${prefix}.tsv:
+      - ${prefix}.*:
           type: file
-          description: "BLAST-TAB formatted TSV"
-          pattern: "*.tsv"
-  - sam:
-      - meta:
-          type: map
-          description: "Groovy Map containing sample information"
-      - ${prefix}.sam:
-          type: file
-          description: "SAM‐format alignment output"
-          pattern: "*.sam"
+          description: |
+            Converted MMseqs2 alignment output.  
+            Extension varies by `format_mode`:  
+            - `.m8` for BLAST-TAB (mode 0)  
+            - `.tsv` for tab-separated values (other modes)  "BLAST-TAB formatted TSV"
+          pattern: "*"
   - versions:
       - versions.yml:
           type: file
