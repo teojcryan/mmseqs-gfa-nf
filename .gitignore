@@ -1,0 +1,19 @@
+# Nextflow artifacts
+.nextflow/
+.nextflow.log
+work/
+logs/
+
+# Conda / environment files
+.env/
+.conda/
+.venv/
+
+# OS cruft
+.DS_Store
+
+# Test snapshots (optional)
+modules/**/tests/*.snap
+
+# Large files you don’t want in Git
+_results/
