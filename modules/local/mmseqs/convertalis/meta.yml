@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/yaml-schema.json
+name: "mmseqs_convertalis"
+description: Convert an MMseqs2 alignment database into BLAST-TAB (TSV) or SAM formats.
+keywords:
+  - alignment
+  - databases
+  - mmseqs2
+  - convertalis
+  - BLAST
+  - tsv
+tools:
+  - "mmseqs":
+      description: "MMseqs2: ultra fast and sensitive sequence search and clustering
+        suite"
+      homepage: "https://github.com/soedinglab/MMseqs2"
+      documentation: "https://mmseqs.com/latest/userguide.pdf"
+      tool_dev_url: "https://github.com/soedinglab/MMseqs2"
+      doi: "10.1093/bioinformatics/btw006"
+      licence: ["GPL v3"]
+      identifier: biotools:mmseqs
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information,
+          e.g. `[ id:'sample1', single_end:false ]`
+    - db_query:
+        type: file
+        description: "MMseqs2 query database"
+  - - meta2:
+        type: map
+        description: |
+          Groovy Map containing sample information,
+          e.g. `[ id:'sample1', single_end:false ]`
+    - db_target:
+        type: file
+        description: "MMseqs2 target database"
+  - - meta3:
+        type: map
+        description: |
+          Groovy Map containing sample information,
+          e.g. `[ id:'sample1', single_end:false ]`
+    - alignment_db:
+        type: file
+        description: "MMseqs2 alignment database to convert"
+output:
+  - blast_tsv:
+      - meta:
+          type: map
+          description: "Groovy Map containing sample information"
+      - ${prefix}.tsv:
+          type: file
+          description: "BLAST-TAB formatted TSV"
+          pattern: "*.tsv"
+  - sam:
+      - meta:
+          type: map
+          description: "Groovy Map containing sample information"
+      - ${prefix}.sam:
+          type: file
+          description: "SAM‐format alignment output"
+          pattern: "*.sam"
+  - versions:
+      - versions.yml:
+          type: file
+          description: File containing software versions
+          pattern: "versions.yml"
+authors:
+  - "@teojcryan"
+maintainers:
+  - "@teojcryan"
