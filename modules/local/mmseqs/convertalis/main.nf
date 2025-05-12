@@ -22,18 +22,26 @@ process MMSEQS_CONVERTALIS {
     script:
     def args   = task.ext.args   ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def args2 = task.ext.args2 ?: "*.dbtype"
+    def args3 = task.ext.args3 ?: "*.dbtype"
+    def out_file = "${prefix}_${meta2.id}_${meta.id}${params.format_mode == 0 ? '.m8' : '.tsv'}"
 
     if ("${db_query}" == "${prefix}" || "${db_target}" == "${prefix}") {
         error("Input and output names of databases are the same, set prefix in module configuration to disambiguate!")
     }
     """
-    mmseqs convertalis \
-        ${db_query} \
-        ${db_target} \
-        ${db_alignment} \
-        ${out_file} \
-        --format-mode ${params.format_mode} \
-        ${ params.format_output ? "--format-output ${params.format_output}" : "" } \
+    # Extract files with specified args based suffix | remove suffix | isolate longest common substring of files
+    DB_QUERY_PATH_NAME=\$(find -L "${db_query}/" -maxdepth 1 -name "${args2}" | sed 's/\\.[^.]*\$//' | sed -e 'N;s/^\\(.*\\).*\\n\\1.*\$/\\1\\n\\1/;D' )
+    DB_TARGET_PATH_NAME=\$(find -L "${db_target}/" -maxdepth 1 -name "${args3}" | sed 's/\\.[^.]*\$//' | sed -e 'N;s/^\\(.*\\).*\\n\\1.*\$/\\1\\n\\1/;D' )
+    DB_ALIGNMENT_PATH_NAME=\$(find -L "${db_alignment}/" -maxdepth 1 -name "${args2}" | sed 's/\\.[^.]*\$//' | sed -e 'N;s/^\\(.*\\).*\\n\\1.*\$/\\1\\n\\1/;D' )
+
+    mmseqs convertalis \\
+        \$DB_QUERY_PATH_NAME \\
+        \$DB_TARGET_PATH_NAME \\
+        \$DB_ALIGNMENT_PATH_NAME \\
+        ${out_file} \\
+        --format-mode ${params.format_mode} \\
+        ${ params.format_output ? "--format-output ${params.format_output}" : "" } \\
         ${task.ext.args ?: ''}
 
     cat <<-END_VERSIONS > versions.yml
