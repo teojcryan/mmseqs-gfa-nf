@@ -7,18 +7,13 @@ process MMSEQS_CONVERTALIS {
         'https://depot.galaxyproject.org/singularity/mmseqs2:17.b804f--hd6d6fdc_1':
         'biocontainers/mmseqs2:17.b804f--hd6d6fdc_1' }"
 
-    // Compute output filename based on format_mode
-    def prefix = task.ext.prefix ?: meta.id
-    def ext    = (params.format_mode == 0) ? 'm8' : 'tsv'
-    def out_file = "${prefix}.${ext}"
-
     input:
     tuple val(meta), path(db_query)
     tuple val(meta2), path(db_target)
     tuple val(meta3), path(db_alignment)
 
     output:
-    tuple val(meta), path(out_file), emit: result
+    tuple val(meta), path("*.{m8,tsv}"), emit: result
     path "versions.yml", emit: versions
 
     when:
