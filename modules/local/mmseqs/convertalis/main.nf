@@ -1,7 +1,8 @@
 process MMSEQS_CONVERTALIS {
     tag "${meta.id}"
     label 'process_high'
-
+    publishDir "${params.outdir}/alignments", mode: 'copy'
+	
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/mmseqs2:4.bff50--h21aa3a5_1':
