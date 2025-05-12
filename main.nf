@@ -5,16 +5,15 @@
     Pipeline to run MMseqs2 searches on GFA-derived node sequences
     
     Usage:
-    nextflow run main.nf --nodes <nodes_fasta> --query <query_fasta> [options]
+    nextflow run main.nf --samplesheet <samplesheet.csv> [options]
     
     Options:
-      --nodes           Path to the nodes FASTA file (e.g., from GFA)
-      --query           Path to the query FASTA file
-      --outdir          Output directory (default: 'results')
-      --search_type     MMseqs2 search type (default: 3)
-      --sensitivity     MMseqs2 sensitivity parameter (default: 7.5)
-      --format_mode     Format mode for convertalis (default: 0)
-      --format_output   Format output string for convertalis (optional)
+      --samplesheet      Path to samplesheet CSV file with query and target information
+      --outdir           Output directory (default: 'results')
+      --search_type      MMseqs2 search type (default: 3)
+      --sensitivity      MMseqs2 sensitivity parameter (default: 7.5)
+      --format_mode      Format mode for convertalis (default: 0)
+      --format_output    Format output string for convertalis (optional)
 */
 
 include { MMSEQS_CREATEDB as MMSEQS_CREATEDB_NODES } from './modules/nf-core/mmseqs/createdb/main.nf'
@@ -32,11 +31,11 @@ def helpMessage() {
     =========================================
     
     Usage:
-    nextflow run main.nf --nodes <nodes_fasta> --query <query_fasta> [options]
+    nextflow run main.nf --samplesheet <samplesheet.csv> [options]
     
     Required arguments:
-      --nodes           Path to the nodes FASTA file (e.g., from GFA)
-      --query           Path to the query FASTA file
+      --samplesheet      Path to samplesheet CSV file specifying target and query information
+                         Format: [optional: target],target_fasta,[optional: query],query_fasta
     
     Optional arguments:
       --outdir          Output directory (default: '${params.outdir}')
@@ -57,8 +56,6 @@ log.info """
 =======================================================
 mmseqs-gfa-nf v${workflow.manifest.version}
 =======================================================
-Nodes FASTA        : ${params.nodes}
-Query FASTA        : ${params.query}
 Samplesheet        : ${params.samplesheet}
 Output directory   : ${params.outdir}
 Work directory     : ${workflow.workDir}
