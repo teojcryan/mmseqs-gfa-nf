@@ -35,7 +35,7 @@ process MMSEQS_CONVERTALIS {
     mmseqs convertalis \
         ${db_query} \
         ${db_target} \
-        ${alignment_db} \
+        ${db_alignment} \
         ${out_file} \
         --format-mode ${params.format_mode} \
         ${ params.format_output ? "--format-output ${params.format_output}" : "" } \
