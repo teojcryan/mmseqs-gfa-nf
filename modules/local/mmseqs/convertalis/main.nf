@@ -2,7 +2,7 @@ process MMSEQS_CONVERTALIS {
     tag "${meta.id}"
     label 'process_high'
     publishDir "${params.outdir}/alignments", mode: 'copy'
-	
+
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/mmseqs2:4.bff50--h21aa3a5_1':
@@ -25,7 +25,7 @@ process MMSEQS_CONVERTALIS {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def args2 = task.ext.args2 ?: "*.dbtype"
     def args3 = task.ext.args3 ?: "*.dbtype"
-    def out_file = "${prefix}_${meta2.id}_${meta.id}${params.format_mode == 0 ? '.m8' : '.tsv'}"
+    def out_file = "${prefix}.${meta2.id}.${meta.id}${params.format_mode == 0 ? '.m8' : '.tsv'}"
 
     if ("${db_query}" == "${prefix}" || "${db_target}" == "${prefix}") {
         error("Input and output names of databases are the same, set prefix in module configuration to disambiguate!")
