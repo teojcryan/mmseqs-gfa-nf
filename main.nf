@@ -15,7 +15,6 @@
       --outdir          Output directory (default: 'results')
       --search_type     MMseqs2 search type (default: 3)
       --sensitivity     MMseqs2 sensitivity parameter (default: 7.5)
-      --threads         Number of threads to use (default: 8)
       --format_mode     Format mode for convertalis (default: 0)
       --format_output   Format output string for convertalis (optional)
 */
@@ -45,7 +44,6 @@ def helpMessage() {
       --outdir          Output directory (default: '${params.outdir}')
       --search_type     MMseqs2 search type (default: ${params.search_type})
       --sensitivity     MMseqs2 sensitivity parameter (default: ${params.sensitivity})
-      --threads         Number of threads to use (default: ${params.threads})
       --format_mode     Format mode for convertalis (default: ${params.format_mode})
       --format_output   Format output string for convertalis (optional)
     """.stripIndent()
@@ -73,9 +71,9 @@ mmseqs-gfa-nf v${workflow.manifest.version}
 Nodes FASTA        : ${params.nodes}
 Query FASTA        : ${params.query}
 Output directory   : ${params.outdir}
+Work directory     : ${workflow.workDir}
 Search type        : ${params.search_type}
 Sensitivity        : ${params.sensitivity}
-Threads            : ${params.threads}
 Format mode        : ${params.format_mode}
 Format output      : ${params.format_output ?: 'Default'}
 =======================================================
@@ -109,14 +107,14 @@ workflow {
 
     // Perform the search
     MMSEQS_SEARCH(
-        MMSEQS_CREATEDB_QUERY.out.db,  // Query database
-        MMSEQS_CREATEINDEX.out.db_indexed  // Target database (indexed)
+        MMSEQS_CREATEDB_QUERY.out.db,  		// Query database
+        MMSEQS_CREATEINDEX.out.db_indexed  	// Target database (indexed)
     )
 
     // Convert the alignment database to output format
     MMSEQS_CONVERTALIS(
-        MMSEQS_CREATEDB_QUERY.out.db,     // Query database
-        MMSEQS_CREATEINDEX.out.db_indexed, // Target database
-        MMSEQS_SEARCH.out.db_search       // Alignment database
+        MMSEQS_CREATEDB_QUERY.out.db,     	// Query database
+        MMSEQS_CREATEINDEX.out.db_indexed, 	// Target database
+        MMSEQS_SEARCH.out.db_search       	// Alignment database
     )
 }
