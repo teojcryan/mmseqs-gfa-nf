@@ -17,3 +17,4 @@ modules/**/tests/*.snap
 
 # Large files you don’t want in Git
 _results/
+results/
