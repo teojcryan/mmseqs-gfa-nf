@@ -1,6 +1,6 @@
 # Nextflow artifacts
 .nextflow/
-.nextflow.log
+.nextflow.log*
 work/
 logs/
 
