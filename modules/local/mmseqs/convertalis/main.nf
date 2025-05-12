@@ -4,8 +4,8 @@ process MMSEQS_CONVERTALIS {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mmseqs2:17.b804f--hd6d6fdc_1':
-        'biocontainers/mmseqs2:17.b804f--hd6d6fdc_1' }"
+        'https://depot.galaxyproject.org/singularity/mmseqs2:4.bff50--h21aa3a5_1':
+        'quay.io/biocontainers/mmseqs2:4.bff50--h21aa3a5_1' }"
 
     input:
     tuple val(meta), path(db_query)
