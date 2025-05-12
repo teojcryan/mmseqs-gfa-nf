@@ -1,5 +1,5 @@
 process MMSEQS_CONVERTALIS {
-    tag "${meta.id}"
+    tag "${meta.id} vs ${meta2.id}"
     label 'process_high'
     publishDir "${params.outdir}/alignments", mode: 'copy'
 
@@ -22,14 +22,10 @@ process MMSEQS_CONVERTALIS {
 
     script:
     def args   = task.ext.args   ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
     def args2 = task.ext.args2 ?: "*.dbtype"
     def args3 = task.ext.args3 ?: "*.dbtype"
-    def out_file = "${prefix}${params.format_mode == 0 ? '.m8' : '.tsv'}"
+    def out_file = "${meta2.id}.${meta.id}${params.format_mode == 0 ? '.m8' : '.tsv'}"
 
-    if ("${db_query}" == "${prefix}" || "${db_target}" == "${prefix}") {
-        error("Input and output names of databases are the same, set prefix in module configuration to disambiguate!")
-    }
     """
     # Extract files with specified args based suffix | remove suffix | isolate longest common substring of files
     DB_QUERY_PATH_NAME=\$(find -L "${db_query}/" -maxdepth 1 -name "${args2}" | sed 's/\\.[^.]*\$//' | sed -e 'N;s/^\\(.*\\).*\\n\\1.*\$/\\1\\n\\1/;D' )
