@@ -25,7 +25,7 @@ process MMSEQS_CONVERTALIS {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def args2 = task.ext.args2 ?: "*.dbtype"
     def args3 = task.ext.args3 ?: "*.dbtype"
-    def out_file = "${prefix}.${meta2.id}.${meta.id}${params.format_mode == 0 ? '.m8' : '.tsv'}"
+    def out_file = "${prefix}${params.format_mode == 0 ? '.m8' : '.tsv'}"
 
     if ("${db_query}" == "${prefix}" || "${db_target}" == "${prefix}") {
         error("Input and output names of databases are the same, set prefix in module configuration to disambiguate!")
