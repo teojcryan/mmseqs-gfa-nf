@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import re
 import glob
@@ -65,28 +63,29 @@ def process_file(args):
     filepath, target, temp_dir, chunk_size, disable_tqdm = args
     query_origin = extract_query_from_filename(filepath, target)
 
-    # Count lines in file for progress bar if tqdm is enabled
-    if not disable_tqdm:
-        try:
-            with open(filepath, "r") as f:
-                total_lines = sum(1 for _ in f)
-        except:
-            total_lines = None
-    else:
-        total_lines = None
-
     output_file = os.path.join(temp_dir, os.path.basename(filepath) + ".processed")
 
     try:
+        # Use file size as a proxy for progress instead of counting lines
+        total_size = os.path.getsize(filepath)
+        processed_size = 0
+
         with open(filepath, "r") as f, open(output_file, "w") as out:
-            # Use tqdm to show progress
-            for line in tqdm(
-                f,
-                total=total_lines,
-                desc=f"Processing {os.path.basename(filepath)}",
-                unit=" lines",
-                disable=disable_tqdm,
-            ):
+            # Create progress bar based on file size
+            pbar = None
+            if not disable_tqdm:
+                pbar = tqdm(
+                    total=total_size,
+                    desc=f"Processing {os.path.basename(filepath)}",
+                    unit="B",
+                    unit_scale=True,
+                )
+
+            for line in f:
+                if pbar:
+                    processed_size += len(line)
+                    pbar.update(len(line))
+
                 if not line.strip():
                     continue
 
@@ -95,8 +94,6 @@ def process_file(args):
                     continue
 
                 # Swap columns 1 and 2, and add query_origin
-                # Original: column1 = organism, column2 = node ID
-                # New: subject = node ID, query = organism, query_origin = from filename
                 organism = fields[0]
                 node_id = fields[1]
                 rest_of_fields = fields[2:]
@@ -104,9 +101,15 @@ def process_file(args):
                 new_row = [node_id, organism, query_origin] + rest_of_fields
                 out.write("\t".join(new_row) + "\n")
 
+            if pbar:
+                pbar.close()
+
         return output_file
+    except IOError as e:
+        print(f"I/O error processing file {filepath}: {e}", file=sys.stderr)
+        raise
     except Exception as e:
-        print(f"Error processing file {filepath}: {e}", file=sys.stderr)
+        print(f"Unexpected error processing file {filepath}: {e}", file=sys.stderr)
         raise
 
 
@@ -116,35 +119,48 @@ def merge_files(files, output_file, header, disable_tqdm=False):
 
     # Create an intermediate merged file without header
     merged_file = output_file + ".merged"
-    with open(merged_file, "w") as out_f:
-        for f in tqdm(files, desc="Merging files", disable=disable_tqdm):
-            with open(f, "r") as in_f:
-                for line in in_f:
-                    out_f.write(line)
+    sorted_file = output_file + ".sorted"
 
-    # Sort the merged file using the Unix sort command (efficient for large files)
-    # -k1,1n sorts numerically on the first field
-    print("Sorting merged file by subject ID...", file=sys.stderr)
-    sort_cmd = ["sort", "-k1,1n", merged_file, "-o", output_file + ".sorted"]
-    subprocess.run(sort_cmd, check=True)
+    try:
+        with open(merged_file, "w") as out_f:
+            for f in tqdm(files, desc="Merging files", disable=disable_tqdm):
+                try:
+                    with open(f, "r") as in_f:
+                        for line in in_f:
+                            out_f.write(line)
+                except IOError as e:
+                    print(f"Warning: Error reading file {f}: {e}", file=sys.stderr)
 
-    # Add header to the sorted file
-    with open(output_file, "w") as final_f:
-        final_f.write(header + "\n")
-        with open(output_file + ".sorted", "r") as sorted_f:
-            for line in sorted_f:
-                final_f.write(line)
+        # Sort the merged file using the Unix sort command (efficient for large files)
+        # -k1,1n sorts numerically on the first field
+        print("Sorting merged file by subject ID...", file=sys.stderr)
+        sort_cmd = ["sort", "-k1,1n", merged_file, "-o", sorted_file]
+        subprocess.run(sort_cmd, check=True)
 
-    # Clean up temporary files
-    os.remove(merged_file)
-    os.remove(output_file + ".sorted")
+        # Add header to the sorted file
+        with open(output_file, "w") as final_f:
+            final_f.write(header + "\n")
+            with open(sorted_file, "r") as sorted_f:
+                for line in sorted_f:
+                    final_f.write(line)
+
+    finally:
+        # Clean up temporary files with error handling
+        for temp_file in [merged_file, sorted_file]:
+            try:
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+            except OSError as e:
+                print(
+                    f"Warning: Failed to remove temporary file {temp_file}: {e}",
+                    file=sys.stderr,
+                )
 
 
 def main():
     args = parse_args()
 
     # Find all input files - handle m8 and tsv separately then combine
-    # This fixes the issue with brace expansion in glob
     m8_pattern = os.path.join(args.dir, f"{args.target}.*.m8")
     tsv_pattern = os.path.join(args.dir, f"{args.target}.*.tsv")
 
@@ -160,7 +176,7 @@ def main():
 
     print(f"Found {len(input_files)} alignment files to process", file=sys.stderr)
 
-    # Define the header (now with 13 columns)
+    # Define the header
     header = "subject\tquery\tquery_origin\t%identity\talignment_length\tmismatches\tgap_openings\tquery_start\tquery_end\tsubject_start\tsubject_end\te_value\tbit_score"
 
     # Create temp directory
